@@ -1,4 +1,4 @@
-Hello-World
+Lists-Java
 ===========
 
-Just a temp repository to go through an Eclipse-Github tutorial.
+A Java program to crate lists such as Grocery lists, to-do lists, etc.
