@@ -21,7 +21,7 @@ public class ListApp extends JFrame
 		//Set up the main panel.
 		panel = new JPanel();
 		getContentPane().add( panel );
-		panel.setLayout( null );;
+		panel.setLayout( null );
 
 		setTitle( "List" );
 		setSize( 600, 600 );
