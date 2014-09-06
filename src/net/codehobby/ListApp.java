@@ -6,19 +6,34 @@
 
 package net.codehobby;
 
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /**
  *
  * @author jeff
  */
 public class ListApp extends javax.swing.JFrame {
+    
+    private Map<Integer, String> lists;//The list of lists as Strings with Integer IDs associated with them.
+    private DefaultListModel listsJListModel;
 
     /**
      * Creates new form ListApp
      */
-    public ListApp() {
+    public ListApp()
+    {
+        listsJListModel = new DefaultListModel();
+        lists = new HashMap<Integer, String>();
+        
         initComponents();
+        
+        getLists();
     }
 
     /**
@@ -30,26 +45,26 @@ public class ListApp extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
+        listsJScrollPane = new javax.swing.JScrollPane();
         listsJList = new javax.swing.JList();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        listElementsJList = new javax.swing.JList();
+        itemsJScrollPane = new javax.swing.JScrollPane();
+        itemsJPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Lists");
         setName("mainJFrame"); // NOI18N
         setPreferredSize(new java.awt.Dimension(600, 600));
 
-        listsJList.setModel( new DefaultListModel() );
+        listsJList.setModel( listsJListModel );
         listsJList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 listsJListValueChanged(evt);
             }
         });
-        jScrollPane1.setViewportView(listsJList);
+        listsJScrollPane.setViewportView(listsJList);
 
-        listElementsJList.setModel( new DefaultListModel() );
-        jScrollPane2.setViewportView(listElementsJList);
+        itemsJPanel.setLayout(new javax.swing.BoxLayout(itemsJPanel, javax.swing.BoxLayout.PAGE_AXIS));
+        itemsJScrollPane.setViewportView(itemsJPanel);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -57,9 +72,9 @@ public class ListApp extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(listsJScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                .addComponent(itemsJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -67,20 +82,66 @@ public class ListApp extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2))
+                    .addComponent(itemsJScrollPane, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(listsJScrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * This is called when the value on the lists JList is changed, so it'll start the process of changing the items JScrollPane.
+     * @param evt The event object.
+     */
     private void listsJListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_listsJListValueChanged
         if( !(evt.getValueIsAdjusting()) )
         {//If the selection value isn't still in flux, change the values in listElementsJList.
-            //TODO: change the values in listElementsJList
+            itemsJPanel.removeAll();
+            itemsJPanel.updateUI();
+            for( Map.Entry<Integer, String> entry : lists.entrySet() )
+            {//Go through each entry in the map until it finds the one with a String value equal to what the user has selected.
+                if( listsJList.getSelectedValue().toString().equals(entry.getValue()) )
+                {//If the selected value of listsJList is equal to the current entry in the map, add the list items.
+                    //For now, just add rows equal to the number of the index. I'll put in something more useful later.
+                    for( Integer i = 0; i < entry.getKey(); i++ )
+                    {
+                        JPanel panel = new JPanel();
+                        panel.setLayout( new BoxLayout(panel, BoxLayout.LINE_AXIS) );
+                        JCheckBox checkBox = new JCheckBox();
+                        panel.add( checkBox );
+                        JLabel label = new JLabel( "TEST " + (i+1) );
+                        panel.add( label );
+                        itemsJPanel.add( panel );
+                        itemsJPanel.revalidate();
+                    }
+                }
+            }
         }
     }//GEN-LAST:event_listsJListValueChanged
+
+    /**
+     * This method gets the list of list from wherever and puts them in the lists object.
+     * 
+     * So far this method just makes up some lists, a more useful implementation will be written later.
+     */
+    private void getLists()
+    {
+        lists.clear();
+        lists.put( 1, "Test 1" );
+        lists.put( 2, "Test 2" );
+        lists.put( 3, "Test 3" );
+
+        syncLists();
+    }
+    
+    private void syncLists()
+    {
+        for( Map.Entry<Integer, String> entry : lists.entrySet() )
+        {
+            listsJListModel.addElement( entry.getValue() );
+        }
+    }
 
     /**
      * @param args the command line arguments
@@ -118,9 +179,9 @@ public class ListApp extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JList listElementsJList;
+    private javax.swing.JPanel itemsJPanel;
+    private javax.swing.JScrollPane itemsJScrollPane;
     private javax.swing.JList listsJList;
+    private javax.swing.JScrollPane listsJScrollPane;
     // End of variables declaration//GEN-END:variables
 }
