@@ -24,6 +24,7 @@
 
 package net.codehobby;
 
+import com.google.gson.Gson;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -66,5 +67,34 @@ public class ItemList
     public Iterator<Map.Entry<Integer, String>> iterator()
     {
         return items.entrySet().iterator();
+    }
+    
+    /**
+     * Converts this object to a Json representation.
+     * @return The json as a string.
+     */
+    public String convertToJson()
+    {
+        Gson jsonCreator = new Gson();
+        String jsonText = jsonCreator.toJson( this );
+        return jsonText;
+    }
+    
+    /**
+     * Returns the name of the list.
+     * @return the name of the list.
+     */
+    public String getName()
+    {
+        return name;
+    }
+    
+    /**
+     * Sets the name of the list.
+     * @param newName The name of the list.
+     */
+    public void setName( String newName )
+    {
+        name = newName;
     }
 }
