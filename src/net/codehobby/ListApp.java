@@ -23,7 +23,12 @@
 
 package net.codehobby;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -33,12 +38,13 @@ import javax.swing.JPanel;
 
 /**
  *
- * @author jeff
+ * @author Jeff Crone
  */
 public class ListApp extends javax.swing.JFrame {
     
-    private Map<Integer, String> lists;//The list of lists as Strings with Integer IDs associated with them.
+    private List<ItemList> lists;//The list of lists as Strings with Integer IDs associated with them.
     private DefaultListModel listsJListModel;
+    private ItemListener checkBoxListener;
 
     /**
      * Creates new form ListApp
@@ -46,7 +52,16 @@ public class ListApp extends javax.swing.JFrame {
     public ListApp()
     {
         listsJListModel = new DefaultListModel();
-        lists = new HashMap<Integer, String>();
+        lists = new ArrayList<ItemList>();
+        
+        //Set up the object checkboxes use to call itemJCheckBoxValueChanged( ItemEvent evt ) when they're checked or unchecked.
+        checkBoxListener = new ItemListener()
+        {
+            public void itemStateChanged( ItemEvent evt )
+            {
+                itemJCheckBoxValueChanged( evt );
+            }
+        };
         
         initComponents();
         
@@ -109,6 +124,7 @@ public class ListApp extends javax.swing.JFrame {
 
     /**
      * This is called when the value on the lists JList is changed, so it'll start the process of changing the items JScrollPane.
+     * 
      * @param evt The event object.
      */
     private void listsJListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_listsJListValueChanged
@@ -116,19 +132,27 @@ public class ListApp extends javax.swing.JFrame {
         {//If the selection value isn't still in flux, change the values in listElementsJList.
             itemsJPanel.removeAll();
             itemsJPanel.updateUI();
-            for( Map.Entry<Integer, String> entry : lists.entrySet() )
+            for( ItemList list : lists )
             {//Go through each entry in the map until it finds the one with a String value equal to what the user has selected.
-                if( listsJList.getSelectedValue().toString().equals(entry.getValue()) )
+                if( (listsJList.getSelectedValue() != null) && (((ItemList)listsJList.getSelectedValue()).getID().equals(list.getID())) )
                 {//If the selected value of listsJList is equal to the current entry in the map, add the list items.
-                    //For now, just add rows equal to the number of the index. I'll put in something more useful later.
-                    for( Integer i = 0; i < entry.getKey(); i++ )
+                    for( Map.Entry<Integer, String> item : list )
                     {
+                        //Set up a panel to add to itemsJPanel.
                         JPanel panel = new JPanel();
                         panel.setLayout( new BoxLayout(panel, BoxLayout.LINE_AXIS) );
+                        
+                        //Add the checkbox to the panel.
                         JCheckBox checkBox = new JCheckBox();
+                        checkBox.setName( item.getKey().toString() );
+                        checkBox.addItemListener( checkBoxListener );
                         panel.add( checkBox );
-                        JLabel label = new JLabel( "TEST " + (i+1) );
+                        
+                        //Add the label to the panel.
+                        JLabel label = new JLabel( item.getValue() );
                         panel.add( label );
+                        
+                        //Add the panel to itemsJPanel and revalidate to make the panel visible.
                         itemsJPanel.add( panel );
                         itemsJPanel.revalidate();
                     }
@@ -138,25 +162,57 @@ public class ListApp extends javax.swing.JFrame {
     }//GEN-LAST:event_listsJListValueChanged
 
     /**
+     * A method to execute code when the user clicks one of the item checkboxes.
+     * 
+     * @param evt The event object.
+     */
+    private void itemJCheckBoxValueChanged( ItemEvent evt )
+    {
+        if( ((JCheckBox)evt.getSource()).isSelected() )
+        {
+            //System.out.println( "You just checked JCheckBox: " + ((JCheckBox)evt.getSource()).getName() + " of List " + ((ItemList)listsJList.getSelectedValue()).getID() );
+        }
+        else
+        {
+            //System.out.println( "You just unchecked JCheckBox: " + ((JCheckBox)evt.getSource()).getName() + " of List " + ((ItemList)listsJList.getSelectedValue()).getID() );
+        }
+    }
+    
+    /**
      * This method gets the list of list from wherever and puts them in the lists object.
      * 
      * So far this method just makes up some lists, a more useful implementation will be written later.
      */
     private void getLists()
     {
-        lists.clear();
-        lists.put( 1, "Test 1" );
-        lists.put( 2, "Test 2" );
-        lists.put( 3, "Test 3" );
+        //For now just create a few lists, I'll write something more useful later.
+        ItemList list1 = new ItemList( 1, "List 1" );
+        list1.addItem( 1, "Item 1-1" );
+        list1.addItem( 2, "Item 1-2" );
+        list1.addItem( 3, "Item 1-3" );
+        lists.add( list1 );
+        
+        ItemList list2 = new ItemList( 2, "List 2" );
+        list2.addItem( 1, "Item 2-1" );
+        list2.addItem( 2, "Item 2-2" );
+        list2.addItem( 3, "Item 2-3" );
+        lists.add( list2 );
+        
+        ItemList list3 = new ItemList( 3, "List 3" );
+        list3.addItem( 1, "Item 3-1" );
+        list3.addItem( 2, "Item 3-2" );
+        list3.addItem( 3, "Item 3-3" );
+        lists.add( list3 );
 
         syncLists();
     }
     
     private void syncLists()
     {
-        for( Map.Entry<Integer, String> entry : lists.entrySet() )
+        for( ItemList list : lists )
         {
-            listsJListModel.addElement( entry.getValue() );
+            //listsJListModel.addElement( list.getName() );
+            listsJListModel.addElement( list );
         }
     }
 

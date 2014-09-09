@@ -34,18 +34,31 @@ import java.util.Map.Entry;
  * A representation of a list of items.
  * @author Jeff Crone
  */
-public class ItemList
+public class ItemList implements Iterable<Map.Entry<Integer, String>>
 {
     private String name;
     private Map<Integer, String> items;
+    private Integer id;
 
     /**
-     * Constructor with the name of the list.
+     * Constructor with the ID and name of the list.
      * @param newName The name of the list.
      */
-    public ItemList( String newName )
+    public ItemList( Integer newId, String newName )
     {
+        id = newId;
         name = newName;
+        items = new HashMap<Integer, String>();
+    }
+
+    /**
+     * Constructor with the IDof the list.
+     * @param newName The name of the list.
+     */
+    public ItemList( Integer newId )
+    {
+        id = newId;
+        name = "";
         items = new HashMap<Integer, String>();
     }
     
@@ -81,6 +94,24 @@ public class ItemList
     }
     
     /**
+     * Returns the ID of the list.
+     * @return the ID of the list.
+     */
+    public Integer getID()
+    {
+        return id;
+    }
+    
+    /**
+     * Sets the ID of the list.
+     * @param newID The new ID of the list.
+     */
+    public void setID( Integer newID )
+    {
+        id = newID;
+    }
+    
+    /**
      * Returns the name of the list.
      * @return the name of the list.
      */
@@ -91,10 +122,15 @@ public class ItemList
     
     /**
      * Sets the name of the list.
-     * @param newName The name of the list.
+     * @param newName The new name of the list.
      */
     public void setName( String newName )
     {
         name = newName;
+    }
+    
+    public String toString()
+    {
+        return getName();
     }
 }
