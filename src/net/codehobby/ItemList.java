@@ -72,6 +72,26 @@ public class ItemList implements Iterable<Map.Entry<Integer, String>>
     {
         items.put( newId, newDescription );
     }
+
+    /**
+     * Adds an item to this list with an automatically generated ID.
+     * @param newDescription 
+     */
+    public void addItem( String newDescription )
+    {
+        //First, figure out what the max ID is.
+        Integer newId = 0;
+        for( Map.Entry<Integer, String> item : items.entrySet() )
+        {
+            if( item.getKey() > newId )
+            {
+                newId = item.getKey();
+            }
+        }
+
+        //Then add the item with the max ID and the description in newDescription.
+        items.put( newId+1, newDescription );
+    }
     
     /**
      * Creates and returns an iterator for going over the items in the list.

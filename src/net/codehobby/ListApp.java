@@ -34,6 +34,7 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
@@ -62,6 +63,10 @@ public class ListApp extends javax.swing.JFrame {
                 itemJCheckBoxValueChanged( evt );
             }
         };
+
+        //Set up a hook that'll run right before the program is closed.
+        ExitHook eHook = new ExitHook();
+        Runtime.getRuntime().addShutdownHook( eHook );
         
         initComponents();
         
@@ -81,6 +86,14 @@ public class ListApp extends javax.swing.JFrame {
         listsJList = new javax.swing.JList();
         itemsJScrollPane = new javax.swing.JScrollPane();
         itemsJPanel = new javax.swing.JPanel();
+        addListJButton = new javax.swing.JButton();
+        addItemJButton = new javax.swing.JButton();
+        mainMenuJMenuBar = new javax.swing.JMenuBar();
+        fileMenuJMenu = new javax.swing.JMenu();
+        exitButtonJMenuItem = new javax.swing.JMenuItem();
+        editMenuJMenu = new javax.swing.JMenu();
+        addListJMenuItem = new javax.swing.JMenuItem();
+        addItemJMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Lists");
@@ -98,25 +111,83 @@ public class ListApp extends javax.swing.JFrame {
         itemsJPanel.setLayout(new javax.swing.BoxLayout(itemsJPanel, javax.swing.BoxLayout.PAGE_AXIS));
         itemsJScrollPane.setViewportView(itemsJPanel);
 
+        addListJButton.setText("Add List");
+        addListJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addListJButtonActionPerformed(evt);
+            }
+        });
+
+        addItemJButton.setText("Add Item");
+        addItemJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addItemJButtonActionPerformed(evt);
+            }
+        });
+
+        fileMenuJMenu.setText("File");
+
+        exitButtonJMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
+        exitButtonJMenuItem.setText("Exit");
+        exitButtonJMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exitButtonJMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenuJMenu.add(exitButtonJMenuItem);
+
+        mainMenuJMenuBar.add(fileMenuJMenu);
+
+        editMenuJMenu.setText("Edit");
+
+        addListJMenuItem.setText("Add List");
+        addListJMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addListJMenuItemActionPerformed(evt);
+            }
+        });
+        editMenuJMenu.add(addListJMenuItem);
+
+        addItemJMenuItem.setText("Add Item");
+        addItemJMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addItemJMenuItemActionPerformed(evt);
+            }
+        });
+        editMenuJMenu.add(addItemJMenuItem);
+
+        mainMenuJMenuBar.add(editMenuJMenu);
+
+        setJMenuBar(mainMenuJMenuBar);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(listsJScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(listsJScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addListJButton))
                 .addGap(18, 18, 18)
-                .addComponent(itemsJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(addItemJButton)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(itemsJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(itemsJScrollPane, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(listsJScrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE))
-                .addContainerGap())
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(itemsJScrollPane)
+                    .addComponent(listsJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 385, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(addListJButton)
+                    .addComponent(addItemJButton)))
         );
 
         pack();
@@ -130,36 +201,140 @@ public class ListApp extends javax.swing.JFrame {
     private void listsJListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_listsJListValueChanged
         if( !(evt.getValueIsAdjusting()) )
         {//If the selection value isn't still in flux, change the values in listElementsJList.
-            itemsJPanel.removeAll();
-            itemsJPanel.updateUI();
-            for( ItemList list : lists )
-            {//Go through each entry in the map until it finds the one with a String value equal to what the user has selected.
-                if( (listsJList.getSelectedValue() != null) && (((ItemList)listsJList.getSelectedValue()).getID().equals(list.getID())) )
-                {//If the selected value of listsJList is equal to the current entry in the map, add the list items.
-                    for( Map.Entry<Integer, String> item : list )
-                    {
-                        //Set up a panel to add to itemsJPanel.
-                        JPanel panel = new JPanel();
-                        panel.setLayout( new BoxLayout(panel, BoxLayout.LINE_AXIS) );
-                        
-                        //Add the checkbox to the panel.
-                        JCheckBox checkBox = new JCheckBox();
-                        checkBox.setName( item.getKey().toString() );
-                        checkBox.addItemListener( checkBoxListener );
-                        panel.add( checkBox );
-                        
-                        //Add the label to the panel.
-                        JLabel label = new JLabel( item.getValue() );
-                        panel.add( label );
-                        
-                        //Add the panel to itemsJPanel and revalidate to make the panel visible.
-                        itemsJPanel.add( panel );
-                        itemsJPanel.revalidate();
-                    }
+            updateItems();
+        }
+    }//GEN-LAST:event_listsJListValueChanged
+
+    /**
+     * Updates the GUI to show the items of the selected list.
+     */
+    private void updateItems()
+    {
+        itemsJPanel.removeAll();
+        itemsJPanel.updateUI();
+        for( ItemList list : lists )
+        {//Go through each entry in the map until it finds the one with a String value equal to what the user has selected.
+            if( (listsJList.getSelectedValue() != null) && (((ItemList)listsJList.getSelectedValue()).getID().equals(list.getID())) )
+            {//If the selected value of listsJList is equal to the current entry in the map, add the list items.
+                for( Map.Entry<Integer, String> item : list )
+                {
+                    //Set up a panel to add to itemsJPanel.
+                    JPanel panel = new JPanel();
+                    panel.setLayout( new BoxLayout(panel, BoxLayout.LINE_AXIS) );
+
+                    //Add the checkbox to the panel.
+                    JCheckBox checkBox = new JCheckBox();
+                    checkBox.setName( item.getKey().toString() );
+                    checkBox.addItemListener( checkBoxListener );
+                    panel.add( checkBox );
+
+                    //Add the label to the panel.
+                    JLabel label = new JLabel( item.getValue() );
+                    panel.add( label );
+
+                    //Add the panel to itemsJPanel and revalidate to make the panel visible.
+                    itemsJPanel.add( panel );
+                    itemsJPanel.revalidate();
                 }
             }
         }
-    }//GEN-LAST:event_listsJListValueChanged
+    }
+    /**
+     * A method to be executed when the user clicks the exit button in the File menu.
+     * @param evt The ActionEvent passed to the method.
+     */
+    private void exitButtonJMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonJMenuItemActionPerformed
+        exitProgram();
+    }//GEN-LAST:event_exitButtonJMenuItemActionPerformed
+
+    private void addListJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addListJButtonActionPerformed
+        addList();
+    }//GEN-LAST:event_addListJButtonActionPerformed
+
+    private void addListJMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addListJMenuItemActionPerformed
+        addList();
+    }//GEN-LAST:event_addListJMenuItemActionPerformed
+
+    private void addItemJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addItemJButtonActionPerformed
+        addItem();
+    }//GEN-LAST:event_addItemJButtonActionPerformed
+
+    private void addItemJMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addItemJMenuItemActionPerformed
+        addItem();
+    }//GEN-LAST:event_addItemJMenuItemActionPerformed
+
+    /**
+     * Kills the program.
+     */
+    private void exitProgram()
+    {
+        System.exit( 0 );
+    }
+
+    /**
+     * Does some cleanup to get ready for the program to close. This is run by the ExitHook class.
+     */
+    private void cleanupBeforeExit()
+    {
+        //So far nothing here because no cleanup neccesary.
+    }
+
+    /**
+     * Brings up a popup dialog to get the name of the ItemList and calls addList( String newName ) to actually add the ItemList.
+     */
+    private void addList()
+    {
+        String newName = JOptionPane.showInputDialog( rootPane, "Name of the list:", "List name", JOptionPane.PLAIN_MESSAGE );
+        if( (newName != null) && !(newName.equals("")) )
+        {//If newName isn't null, which would mean the Cancel button was hit, and newName isn't an empty String, then add the List.
+            addList( newName );
+        }
+        
+    }
+
+    /**
+     * Adds an ItemList of name newName to the lists object.
+     * @param newName The name of the list.
+     */
+    private void addList( String newName )
+    {
+        //Figure out what the highest ItemList ID is so one can be added for the next ID.
+        int maxId = 0;
+        for( int i = 0; i < lists.size(); i++ )
+        {
+            if( lists.get(i).getID() > maxId )
+            {
+                maxId = lists.get(i).getID().intValue();
+            }
+        }
+
+        //Adds one to maxId for the Id and, with the name in newName, creates the new ItemList and puts it in lists.
+        lists.add( new ItemList(maxId+1, newName) );
+
+        //Sync the lists with the GUI to make sure the new list shows up.
+        syncLists();
+    }
+
+    /**
+     * Adds an Item to the currently selected ItemList.
+     */
+    private void addItem()
+    {
+        //Get the correct list.
+        for( ItemList list : lists )
+        {//Go through each entry in the map until it finds the one with a String value equal to what the user has selected.
+            if( (listsJList.getSelectedValue() != null) && (((ItemList)listsJList.getSelectedValue()).getID().equals(list.getID())) )
+            {//If the selected value of listsJList is equal to the current entry in the map, add the item to this list.
+                String newItemName = JOptionPane.showInputDialog( rootPane, "Description of the item:", "Item Description", JOptionPane.PLAIN_MESSAGE );
+                if( (newItemName != null) && !(newItemName.equals("")) )
+                {//If newItemName isn't null, which would mean the Cancel button was hit, and newItemName isn't an empty String, then add the List.
+                    list.addItem( newItemName );
+                }
+            }
+        }
+
+        updateItems();
+    }
 
     /**
      * A method to execute code when the user clicks one of the item checkboxes.
@@ -211,8 +386,29 @@ public class ListApp extends javax.swing.JFrame {
     {
         for( ItemList list : lists )
         {
-            //listsJListModel.addElement( list.getName() );
-            listsJListModel.addElement( list );
+            boolean isSynced = false;//To hold if the list has been synced to the GUI or not.
+
+            for( int i = 0; i < listsJListModel.getSize(); i++ )
+            {//Go through each item in listsJListModel and compare it to the list. If they're equal, set isSynced to true so the method will know not to sync it again.
+                if( listsJListModel.elementAt(i).toString().equalsIgnoreCase(list.getName()) )
+                {
+                    isSynced = true;
+                    break;
+                }
+            }
+
+            if( !(isSynced) )
+            {
+                listsJListModel.addElement( list );
+            }
+        }
+    }
+    
+    private class ExitHook extends Thread
+    {
+        public void run()
+        {
+            cleanupBeforeExit();
         }
     }
 
@@ -252,9 +448,17 @@ public class ListApp extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addItemJButton;
+    private javax.swing.JMenuItem addItemJMenuItem;
+    private javax.swing.JButton addListJButton;
+    private javax.swing.JMenuItem addListJMenuItem;
+    private javax.swing.JMenu editMenuJMenu;
+    private javax.swing.JMenuItem exitButtonJMenuItem;
+    private javax.swing.JMenu fileMenuJMenu;
     private javax.swing.JPanel itemsJPanel;
     private javax.swing.JScrollPane itemsJScrollPane;
     private javax.swing.JList listsJList;
     private javax.swing.JScrollPane listsJScrollPane;
+    private javax.swing.JMenuBar mainMenuJMenuBar;
     // End of variables declaration//GEN-END:variables
 }
