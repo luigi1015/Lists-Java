@@ -23,19 +23,26 @@
 
 package net.codehobby;
 
+import com.google.gson.Gson;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
@@ -90,6 +97,8 @@ public class ListApp extends javax.swing.JFrame {
         addItemJButton = new javax.swing.JButton();
         mainMenuJMenuBar = new javax.swing.JMenuBar();
         fileMenuJMenu = new javax.swing.JMenu();
+        openFileJMenuItem = new javax.swing.JMenuItem();
+        saveFileMenuItem = new javax.swing.JMenuItem();
         exitButtonJMenuItem = new javax.swing.JMenuItem();
         editMenuJMenu = new javax.swing.JMenu();
         addListJMenuItem = new javax.swing.JMenuItem();
@@ -98,7 +107,8 @@ public class ListApp extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Lists");
         setName("mainJFrame"); // NOI18N
-        setPreferredSize(new java.awt.Dimension(600, 600));
+        setPreferredSize(new java.awt.Dimension(600, 450));
+        setResizable(false);
 
         listsJList.setModel( listsJListModel );
         listsJList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
@@ -126,6 +136,24 @@ public class ListApp extends javax.swing.JFrame {
         });
 
         fileMenuJMenu.setText("File");
+
+        openFileJMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        openFileJMenuItem.setText("Open...");
+        openFileJMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openFileJMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenuJMenu.add(openFileJMenuItem);
+
+        saveFileMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        saveFileMenuItem.setText("Save...");
+        saveFileMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveFileMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenuJMenu.add(saveFileMenuItem);
 
         exitButtonJMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
         exitButtonJMenuItem.setText("Exit");
@@ -263,6 +291,70 @@ public class ListApp extends javax.swing.JFrame {
         addItem();
     }//GEN-LAST:event_addItemJMenuItemActionPerformed
 
+    private void openFileJMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileJMenuItemActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_openFileJMenuItemActionPerformed
+
+    /**
+     * Action performed method for the save file menu button.
+     * @param evt The event object.
+     */
+    private void saveFileMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveFileMenuItemActionPerformed
+        saveFileJson();
+    }//GEN-LAST:event_saveFileMenuItemActionPerformed
+
+    /**
+     * Saves the current list data to a JSON file.
+     */
+    private void saveFileJson()
+    {
+        JFileChooser saveFileChooser = new JFileChooser();
+
+        //Create the filter to only show json files.
+        FileNameExtensionFilter filenameFilter = new FileNameExtensionFilter( "JSON", "json" );
+        saveFileChooser.setFileFilter( filenameFilter );
+
+        //Show the save dialog
+        int returnState = saveFileChooser.showSaveDialog( this );
+
+        if( returnState == JFileChooser.APPROVE_OPTION )
+        {//Basically if the user clicked save, go ahead and save.
+            FileWriter saveFile = null;
+            try
+            {
+                //Get the path and set up the file writer.
+                String saveFileName = saveFileChooser.getSelectedFile().getAbsolutePath();
+                if( !(saveFileName.endsWith(".json")) )
+                {//If the filename doesn't have the right extension, add it.
+                    saveFileName += ".json";
+                }
+                saveFile = new FileWriter( saveFileName );
+                Gson jsonData = new Gson();
+
+                //Get the json data for the lists and save it to saveFile.
+                saveFile.write( jsonData.toJson(lists) );
+                saveFile.flush();
+            } catch (IOException ex) {
+                //The file didn't save, give an error.
+                JOptionPane.showMessageDialog( rootPane, "Error saving file: " + ex.getMessage() );
+                ex.printStackTrace();
+            }
+            finally
+            {
+                //Close the file.
+                if( saveFile != null )
+                {
+                    try {
+                        saveFile.close();
+                    } catch (IOException ex) {
+                        //The file didn't close properly, give an error.
+                        JOptionPane.showMessageDialog( rootPane, "Error closing the save file: " + ex.getMessage() );
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
     /**
      * Kills the program.
      */
@@ -460,5 +552,7 @@ public class ListApp extends javax.swing.JFrame {
     private javax.swing.JList listsJList;
     private javax.swing.JScrollPane listsJScrollPane;
     private javax.swing.JMenuBar mainMenuJMenuBar;
+    private javax.swing.JMenuItem openFileJMenuItem;
+    private javax.swing.JMenuItem saveFileMenuItem;
     // End of variables declaration//GEN-END:variables
 }
