@@ -24,11 +24,16 @@
 package net.codehobby;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -292,8 +297,78 @@ public class ListApp extends javax.swing.JFrame {
     }//GEN-LAST:event_addItemJMenuItemActionPerformed
 
     private void openFileJMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileJMenuItemActionPerformed
-        // TODO add your handling code here:
+        openFileJson();
     }//GEN-LAST:event_openFileJMenuItemActionPerformed
+
+    /**
+     * Opens a JSON file and imports the data.
+     */
+    private void openFileJson()
+    {
+        JFileChooser openFileChooser = new JFileChooser();
+        
+        //Ask if the user wants to save the current data first.
+        int sureChoice = JOptionPane.showConfirmDialog(rootPane, "This will overwrite the current data, do you wish to save first?", "Sure?", JOptionPane.YES_NO_CANCEL_OPTION );
+
+        if( sureChoice == JOptionPane.YES_OPTION )
+        {//The user chose to save, so save.
+            saveFileJson();
+        }
+
+        if( sureChoice != JOptionPane.CANCEL_OPTION )
+        {//If the user didn't chose cancel, go ahead and open the file.
+            //Create the filter to only show json files.
+            FileNameExtensionFilter filenameFilter = new FileNameExtensionFilter( "JSON", "json" );
+            openFileChooser.setFileFilter( filenameFilter );
+
+            //Show the open dialog
+            int returnState = openFileChooser.showOpenDialog( this );
+
+            if( returnState == JFileChooser.APPROVE_OPTION )
+            {//Basically if the user clicked open, go ahead and open.
+                BufferedReader openFile = null;
+                try
+                {
+                    //Get the path and set up the buffered reader.
+                    String openFileName = openFileChooser.getSelectedFile().getAbsolutePath();
+                    openFile = new BufferedReader( new FileReader(openFileName) );
+                    Gson jsonData = new Gson();
+                    String jsonString = "";
+                    String fileInputLine = null;
+
+                    //Get the json data as a String from the file.
+                    while( (fileInputLine = openFile.readLine()) != null)
+                    {
+                        jsonString += fileInputLine;
+                    }
+
+                    //Parse the json data to objects and save it to the list of lists.
+                    java.lang.reflect.Type listType = new TypeToken<List<ItemList>>() {}.getType();
+                    lists = new Gson().fromJson( jsonString, listType );
+                    listsJListModel.removeAllElements();
+                    syncLists();
+                } catch (IOException ex) {
+                    //The file didn't open, give an error.
+                    JOptionPane.showMessageDialog( rootPane, "Error opening file: " + ex.getMessage() );
+                    ex.printStackTrace();
+                }
+                finally
+                {
+                    //Close the file.
+                    if( openFile != null )
+                    {
+                        try {
+                            openFile.close();
+                        } catch (IOException ex) {
+                            //The file didn't close properly, give an error.
+                            JOptionPane.showMessageDialog( rootPane, "Error closing the input file: " + ex.getMessage() );
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * Action performed method for the save file menu button.
@@ -330,6 +405,8 @@ public class ListApp extends javax.swing.JFrame {
                 }
                 saveFile = new FileWriter( saveFileName );
                 Gson jsonData = new Gson();
+
+                //System.out.println( jsonData.toJson(lists) );
 
                 //Get the json data for the lists and save it to saveFile.
                 saveFile.write( jsonData.toJson(lists) );
