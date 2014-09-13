@@ -94,6 +94,16 @@ public class ItemList implements Iterable<Map.Entry<Integer, String>>
     }
     
     /**
+     * Deletes an item in the list.
+     * @param ID The ID of the item to delete.
+     * @return The String value of the item.
+     */
+    public String deleteItem( Integer ID )
+    {
+        return items.remove( ID );
+    }
+    
+    /**
      * Creates and returns an iterator for going over the items in the list.
      * @return An iterator of type Iterator<Map.Entry<Integer, String>>.
      */

@@ -55,9 +55,11 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  */
 public class ListApp extends javax.swing.JFrame {
     
-    private List<ItemList> lists;//The list of lists as Strings with Integer IDs associated with them.
+    //private List<ItemList> lists;//The list of lists as Strings with Integer IDs associated with them.
+    private Map<Integer, ItemList> lists;//The list of lists as Strings with Integer IDs associated with them.
     private DefaultListModel listsJListModel;
     private ItemListener checkBoxListener;
+    private List<JCheckBox> itemJCheckBoxes;//A list of all the displayed item checkboxes to make it easier to iterate through them.
 
     /**
      * Creates new form ListApp
@@ -65,7 +67,9 @@ public class ListApp extends javax.swing.JFrame {
     public ListApp()
     {
         listsJListModel = new DefaultListModel();
-        lists = new ArrayList<ItemList>();
+        //lists = new ArrayList<ItemList>();
+        lists = new HashMap<Integer, ItemList>();
+        itemJCheckBoxes = new ArrayList<JCheckBox>();
         
         //Set up the object checkboxes use to call itemJCheckBoxValueChanged( ItemEvent evt ) when they're checked or unchecked.
         checkBoxListener = new ItemListener()
@@ -100,6 +104,7 @@ public class ListApp extends javax.swing.JFrame {
         itemsJPanel = new javax.swing.JPanel();
         addListJButton = new javax.swing.JButton();
         addItemJButton = new javax.swing.JButton();
+        deleteJButton = new javax.swing.JButton();
         mainMenuJMenuBar = new javax.swing.JMenuBar();
         fileMenuJMenu = new javax.swing.JMenu();
         openFileJMenuItem = new javax.swing.JMenuItem();
@@ -107,7 +112,9 @@ public class ListApp extends javax.swing.JFrame {
         exitButtonJMenuItem = new javax.swing.JMenuItem();
         editMenuJMenu = new javax.swing.JMenu();
         addListJMenuItem = new javax.swing.JMenuItem();
+        deleteListJMenuItem = new javax.swing.JMenuItem();
         addItemJMenuItem = new javax.swing.JMenuItem();
+        deleteItemJMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Lists");
@@ -137,6 +144,13 @@ public class ListApp extends javax.swing.JFrame {
         addItemJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addItemJButtonActionPerformed(evt);
+            }
+        });
+
+        deleteJButton.setText("Delete Item");
+        deleteJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteJButtonActionPerformed(evt);
             }
         });
 
@@ -181,6 +195,15 @@ public class ListApp extends javax.swing.JFrame {
         });
         editMenuJMenu.add(addListJMenuItem);
 
+        deleteListJMenuItem.setLabel("Delete List");
+        deleteListJMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteListJMenuItemActionPerformed(evt);
+            }
+        });
+        editMenuJMenu.add(deleteListJMenuItem);
+        deleteListJMenuItem.getAccessibleContext().setAccessibleName("deleteListJMenuItem");
+
         addItemJMenuItem.setText("Add Item");
         addItemJMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -188,6 +211,15 @@ public class ListApp extends javax.swing.JFrame {
             }
         });
         editMenuJMenu.add(addItemJMenuItem);
+
+        deleteItemJMenuItem.setLabel("Delete Item");
+        deleteItemJMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteItemJMenuItemActionPerformed(evt);
+            }
+        });
+        editMenuJMenu.add(deleteItemJMenuItem);
+        deleteItemJMenuItem.getAccessibleContext().setAccessibleName("deleteItemJMenuItem");
 
         mainMenuJMenuBar.add(editMenuJMenu);
 
@@ -206,7 +238,8 @@ public class ListApp extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addItemJButton)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(deleteJButton))
                     .addComponent(itemsJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -220,7 +253,8 @@ public class ListApp extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addListJButton)
-                    .addComponent(addItemJButton)))
+                    .addComponent(addItemJButton)
+                    .addComponent(deleteJButton)))
         );
 
         pack();
@@ -244,26 +278,29 @@ public class ListApp extends javax.swing.JFrame {
     private void updateItems()
     {
         itemsJPanel.removeAll();
+        itemJCheckBoxes.clear();
         itemsJPanel.updateUI();
-        for( ItemList list : lists )
+
+        for( Map.Entry<Integer, ItemList> listMap : lists.entrySet() )
         {//Go through each entry in the map until it finds the one with a String value equal to what the user has selected.
-            if( (listsJList.getSelectedValue() != null) && (((ItemList)listsJList.getSelectedValue()).getID().equals(list.getID())) )
+            if( (listsJList.getSelectedValue() != null) && (((ItemList)listsJList.getSelectedValue()).getID().equals(listMap.getValue().getID())) )
             {//If the selected value of listsJList is equal to the current entry in the map, add the list items.
-                for( Map.Entry<Integer, String> item : list )
+                for( Map.Entry<Integer, String> item : listMap.getValue() )
                 {
                     //Set up a panel to add to itemsJPanel.
                     JPanel panel = new JPanel();
                     panel.setLayout( new BoxLayout(panel, BoxLayout.LINE_AXIS) );
 
                     //Add the checkbox to the panel.
-                    JCheckBox checkBox = new JCheckBox();
+                    JCheckBox checkBox = new JCheckBox( item.getValue() );
                     checkBox.setName( item.getKey().toString() );
                     checkBox.addItemListener( checkBoxListener );
                     panel.add( checkBox );
+                    itemJCheckBoxes.add( checkBox );
 
                     //Add the label to the panel.
-                    JLabel label = new JLabel( item.getValue() );
-                    panel.add( label );
+                    //JLabel label = new JLabel( item.getValue() );
+                    //panel.add( label );
 
                     //Add the panel to itemsJPanel and revalidate to make the panel visible.
                     itemsJPanel.add( panel );
@@ -378,6 +415,18 @@ public class ListApp extends javax.swing.JFrame {
         saveFileJson();
     }//GEN-LAST:event_saveFileMenuItemActionPerformed
 
+    private void deleteJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteJButtonActionPerformed
+        deleteItem();
+    }//GEN-LAST:event_deleteJButtonActionPerformed
+
+    private void deleteItemJMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteItemJMenuItemActionPerformed
+        deleteItem();
+    }//GEN-LAST:event_deleteItemJMenuItemActionPerformed
+
+    private void deleteListJMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteListJMenuItemActionPerformed
+        deleteList();
+    }//GEN-LAST:event_deleteListJMenuItemActionPerformed
+
     /**
      * Saves the current list data to a JSON file.
      */
@@ -478,7 +527,7 @@ public class ListApp extends javax.swing.JFrame {
         }
 
         //Adds one to maxId for the Id and, with the name in newName, creates the new ItemList and puts it in lists.
-        lists.add( new ItemList(maxId+1, newName) );
+        lists.put( maxId+1, new ItemList(maxId+1, newName) );
 
         //Sync the lists with the GUI to make sure the new list shows up.
         syncLists();
@@ -490,19 +539,68 @@ public class ListApp extends javax.swing.JFrame {
     private void addItem()
     {
         //Get the correct list.
-        for( ItemList list : lists )
+        for( Map.Entry<Integer, ItemList> listMap : lists.entrySet() )
         {//Go through each entry in the map until it finds the one with a String value equal to what the user has selected.
-            if( (listsJList.getSelectedValue() != null) && (((ItemList)listsJList.getSelectedValue()).getID().equals(list.getID())) )
+            if( (listsJList.getSelectedValue() != null) && (((ItemList)listsJList.getSelectedValue()).getID().equals(listMap.getValue().getID())) )
             {//If the selected value of listsJList is equal to the current entry in the map, add the item to this list.
                 String newItemName = JOptionPane.showInputDialog( rootPane, "Description of the item:", "Item Description", JOptionPane.PLAIN_MESSAGE );
                 if( (newItemName != null) && !(newItemName.equals("")) )
                 {//If newItemName isn't null, which would mean the Cancel button was hit, and newItemName isn't an empty String, then add the List.
-                    list.addItem( newItemName );
+                    listMap.getValue().addItem( newItemName );
                 }
             }
         }
 
         updateItems();
+    }
+    
+    private void deleteItem()
+    {
+        int choice = JOptionPane.showConfirmDialog(rootPane, "Are you sure you want to delete the selected items?", "Sure?", JOptionPane.YES_NO_OPTION );
+        if( choice == JOptionPane.YES_OPTION )
+        {//If the user said yes, go ahead and delete the items.
+            //Get the correct list.
+            for( Map.Entry<Integer, ItemList> listMap : lists.entrySet() )
+            {//Go through each entry in the map until it finds the one with a String value equal to what the user has selected.
+                if( (listsJList.getSelectedValue() != null) && (((ItemList)listsJList.getSelectedValue()).getID().equals(listMap.getValue().getID())) )
+                {//If the selected value of listsJList is equal to the current entry in the map, add the item to this list.
+                    for( JCheckBox checkBox : itemJCheckBoxes )
+                    {
+                        if( checkBox.isSelected() )
+                        {
+                            System.out.println( "Deleting checkbox " + Integer.decode(checkBox.getName()) );
+                            //list.deleteItem( Integer.getInteger(checkBox.getName()) );
+                            System.out.println( listMap.getValue().deleteItem( Integer.decode(checkBox.getName()) ) );
+                            for( Map.Entry<Integer, String> item : listMap.getValue() )
+                            {
+                                System.out.println( item.getKey() + ": " + item.getValue() );
+                            }
+                        }
+                    }
+                }
+            }
+
+            updateItems();
+        }
+    }
+    
+    private void deleteList()
+    {
+        int choice = JOptionPane.showConfirmDialog(rootPane, "Are you sure you want to delete the selected list?", "Sure?", JOptionPane.YES_NO_OPTION );
+        if( choice == JOptionPane.YES_OPTION )
+        {//If the user said yes, go ahead and delete the items.
+            Map<Integer, ItemList> copy = new HashMap( lists );//Make a copy so you it doesn't have to delete what it's iterating through.
+            //Get the correct list.
+            for( Map.Entry<Integer, ItemList> listMap : copy.entrySet() )
+            {//Go through each entry in the map until it finds the one with a String value equal to what the user has selected.
+                if( (listsJList.getSelectedValue() != null) && (((ItemList)listsJList.getSelectedValue()).getID().equals(listMap.getValue().getID())) )
+                {//If the selected value of listsJList is equal to the current entry in the map, delete the item from the list.
+                    lists.remove( listMap.getKey() );
+                }
+            }
+
+            syncLists();
+        }
     }
 
     /**
@@ -534,32 +632,38 @@ public class ListApp extends javax.swing.JFrame {
         list1.addItem( 1, "Item 1-1" );
         list1.addItem( 2, "Item 1-2" );
         list1.addItem( 3, "Item 1-3" );
-        lists.add( list1 );
+        lists.put( 1, list1 );
         
         ItemList list2 = new ItemList( 2, "List 2" );
         list2.addItem( 1, "Item 2-1" );
         list2.addItem( 2, "Item 2-2" );
         list2.addItem( 3, "Item 2-3" );
-        lists.add( list2 );
+        lists.put( 2, list2 );
         
         ItemList list3 = new ItemList( 3, "List 3" );
         list3.addItem( 1, "Item 3-1" );
         list3.addItem( 2, "Item 3-2" );
         list3.addItem( 3, "Item 3-3" );
-        lists.add( list3 );
+        lists.put( 3, list3 );
 
         syncLists();
     }
     
     private void syncLists()
     {
-        for( ItemList list : lists )
+        listsJListModel.clear();
+        for( Map.Entry<Integer, ItemList> listMap : lists.entrySet() )
+        {
+            listsJListModel.addElement( listMap.getValue() );
+        }
+/*
+        for( Map.Entry<Integer, ItemList> listMap : lists.entrySet() )
         {
             boolean isSynced = false;//To hold if the list has been synced to the GUI or not.
 
             for( int i = 0; i < listsJListModel.getSize(); i++ )
             {//Go through each item in listsJListModel and compare it to the list. If they're equal, set isSynced to true so the method will know not to sync it again.
-                if( listsJListModel.elementAt(i).toString().equalsIgnoreCase(list.getName()) )
+                if( listsJListModel.elementAt(i).toString().equalsIgnoreCase(listMap.getValue().getName()) )
                 {
                     isSynced = true;
                     break;
@@ -568,9 +672,10 @@ public class ListApp extends javax.swing.JFrame {
 
             if( !(isSynced) )
             {
-                listsJListModel.addElement( list );
+                listsJListModel.addElement( listMap.getValue() );
             }
         }
+*/
     }
     
     private class ExitHook extends Thread
@@ -621,6 +726,9 @@ public class ListApp extends javax.swing.JFrame {
     private javax.swing.JMenuItem addItemJMenuItem;
     private javax.swing.JButton addListJButton;
     private javax.swing.JMenuItem addListJMenuItem;
+    private javax.swing.JMenuItem deleteItemJMenuItem;
+    private javax.swing.JButton deleteJButton;
+    private javax.swing.JMenuItem deleteListJMenuItem;
     private javax.swing.JMenu editMenuJMenu;
     private javax.swing.JMenuItem exitButtonJMenuItem;
     private javax.swing.JMenu fileMenuJMenu;
