@@ -25,6 +25,7 @@ package net.codehobby;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -568,7 +569,7 @@ public class ListApp extends javax.swing.JFrame {
                     {
                         if( checkBox.isSelected() )
                         {
-                            System.out.println( "Deleting checkbox " + Integer.decode(checkBox.getName()) );
+                            //System.out.println( "Deleting checkbox " + Integer.decode(checkBox.getName()) );
                             //list.deleteItem( Integer.getInteger(checkBox.getName()) );
                             System.out.println( listMap.getValue().deleteItem( Integer.decode(checkBox.getName()) ) );
                             for( Map.Entry<Integer, String> item : listMap.getValue() )
@@ -613,10 +614,14 @@ public class ListApp extends javax.swing.JFrame {
         if( ((JCheckBox)evt.getSource()).isSelected() )
         {
             //System.out.println( "You just checked JCheckBox: " + ((JCheckBox)evt.getSource()).getName() + " of List " + ((ItemList)listsJList.getSelectedValue()).getID() );
+            //((JCheckBox)evt.getItem()).getParent().setBackground( Color.YELLOW );
+            ((JCheckBox)evt.getItem()).setBackground( Color.YELLOW );
+            ((JCheckBox)evt.getItem()).setOpaque( true );
         }
         else
         {
             //System.out.println( "You just unchecked JCheckBox: " + ((JCheckBox)evt.getSource()).getName() + " of List " + ((ItemList)listsJList.getSelectedValue()).getID() );
+            ((JCheckBox)evt.getItem()).setOpaque( false );
         }
     }
     
