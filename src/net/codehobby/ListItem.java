@@ -40,6 +40,7 @@ public class ListItem
     public ListItem( String newDescription )
     {
         description = newDescription;
+        isChecked = false;
     }
 
     /**
@@ -87,5 +88,14 @@ public class ListItem
     public boolean getIsChecked()
     {
         return isChecked;
+    }
+    
+    /**
+     * Just the normal toString method.
+     * @return A String representation of the item.
+     */
+    public String toString()
+    {
+        return getDescription();
     }
 }

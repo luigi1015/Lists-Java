@@ -286,16 +286,17 @@ public class ListApp extends javax.swing.JFrame {
         {//Go through each entry in the map until it finds the one with a String value equal to what the user has selected.
             if( (listsJList.getSelectedValue() != null) && (((ItemList)listsJList.getSelectedValue()).getID().equals(listMap.getValue().getID())) )
             {//If the selected value of listsJList is equal to the current entry in the map, add the list items.
-                for( Map.Entry<Integer, String> item : listMap.getValue() )
+                for( Map.Entry<Integer, ListItem> item : listMap.getValue() )
                 {
                     //Set up a panel to add to itemsJPanel.
                     JPanel panel = new JPanel();
                     panel.setLayout( new BoxLayout(panel, BoxLayout.LINE_AXIS) );
 
                     //Add the checkbox to the panel.
-                    JCheckBox checkBox = new JCheckBox( item.getValue() );
-                    checkBox.setName( item.getKey().toString() );
+                    JCheckBox checkBox = new JCheckBox( item.getValue().getDescription() );
                     checkBox.addItemListener( checkBoxListener );
+                    checkBox.setName( item.getKey().toString() );
+                    checkBox.setSelected( item.getValue().getIsChecked() );
                     panel.add( checkBox );
                     itemJCheckBoxes.add( checkBox );
 
@@ -310,6 +311,7 @@ public class ListApp extends javax.swing.JFrame {
             }
         }
     }
+
     /**
      * A method to be executed when the user clicks the exit button in the File menu.
      * @param evt The ActionEvent passed to the method.
@@ -572,7 +574,7 @@ public class ListApp extends javax.swing.JFrame {
                             //System.out.println( "Deleting checkbox " + Integer.decode(checkBox.getName()) );
                             //list.deleteItem( Integer.getInteger(checkBox.getName()) );
                             System.out.println( listMap.getValue().deleteItem( Integer.decode(checkBox.getName()) ) );
-                            for( Map.Entry<Integer, String> item : listMap.getValue() )
+                            for( Map.Entry<Integer, ListItem> item : listMap.getValue() )
                             {
                                 System.out.println( item.getKey() + ": " + item.getValue() );
                             }
@@ -611,17 +613,22 @@ public class ListApp extends javax.swing.JFrame {
      */
     private void itemJCheckBoxValueChanged( ItemEvent evt )
     {
+        System.out.println( Integer.decode(((JCheckBox)evt.getItem()).getName()) );
+        System.out.println( ((JCheckBox)evt.getItem()).getName() );
+        lists.get(((ItemList)listsJList.getSelectedValue()).getID()).setItemChecked( Integer.decode(((JCheckBox)evt.getItem()).getName()), ((JCheckBox)evt.getItem()).isSelected() );
+        ((JCheckBox)evt.getItem()).setOpaque( ((JCheckBox)evt.getSource()).isSelected() );
+
         if( ((JCheckBox)evt.getSource()).isSelected() )
         {
             //System.out.println( "You just checked JCheckBox: " + ((JCheckBox)evt.getSource()).getName() + " of List " + ((ItemList)listsJList.getSelectedValue()).getID() );
             //((JCheckBox)evt.getItem()).getParent().setBackground( Color.YELLOW );
             ((JCheckBox)evt.getItem()).setBackground( Color.YELLOW );
-            ((JCheckBox)evt.getItem()).setOpaque( true );
+            //((JCheckBox)evt.getItem()).setOpaque( true );
         }
         else
         {
             //System.out.println( "You just unchecked JCheckBox: " + ((JCheckBox)evt.getSource()).getName() + " of List " + ((ItemList)listsJList.getSelectedValue()).getID() );
-            ((JCheckBox)evt.getItem()).setOpaque( false );
+            //((JCheckBox)evt.getItem()).setOpaque( false );
         }
     }
     

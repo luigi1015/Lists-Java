@@ -34,10 +34,10 @@ import java.util.Map.Entry;
  * A representation of a list of items.
  * @author Jeff Crone
  */
-public class ItemList implements Iterable<Map.Entry<Integer, String>>
+public class ItemList implements Iterable<Map.Entry<Integer, ListItem>>
 {
     private String name;
-    private Map<Integer, String> items;
+    private Map<Integer, ListItem> items;
     private Integer id;
 
     /**
@@ -48,7 +48,7 @@ public class ItemList implements Iterable<Map.Entry<Integer, String>>
     {
         id = newId;
         name = newName;
-        items = new HashMap<Integer, String>();
+        items = new HashMap<Integer, ListItem>();
     }
 
     /**
@@ -59,7 +59,7 @@ public class ItemList implements Iterable<Map.Entry<Integer, String>>
     {
         id = newId;
         name = "";
-        items = new HashMap<Integer, String>();
+        items = new HashMap<Integer, ListItem>();
     }
     
     /**
@@ -70,7 +70,7 @@ public class ItemList implements Iterable<Map.Entry<Integer, String>>
      */
     public void addItem( Integer newId, String newDescription )
     {
-        items.put( newId, newDescription );
+        items.put( newId, new ListItem(newDescription) );
     }
 
     /**
@@ -81,7 +81,7 @@ public class ItemList implements Iterable<Map.Entry<Integer, String>>
     {
         //First, figure out what the max ID is.
         Integer newId = 0;
-        for( Map.Entry<Integer, String> item : items.entrySet() )
+        for( Map.Entry<Integer, ListItem> item : items.entrySet() )
         {
             if( item.getKey() > newId )
             {
@@ -90,7 +90,7 @@ public class ItemList implements Iterable<Map.Entry<Integer, String>>
         }
 
         //Then add the item with the max ID and the description in newDescription.
-        items.put( newId+1, newDescription );
+        items.put( newId+1, new ListItem(newDescription) );
     }
     
     /**
@@ -98,7 +98,7 @@ public class ItemList implements Iterable<Map.Entry<Integer, String>>
      * @param ID The ID of the item to delete.
      * @return The String value of the item.
      */
-    public String deleteItem( Integer ID )
+    public ListItem deleteItem( Integer ID )
     {
         return items.remove( ID );
     }
@@ -107,11 +107,61 @@ public class ItemList implements Iterable<Map.Entry<Integer, String>>
      * Creates and returns an iterator for going over the items in the list.
      * @return An iterator of type Iterator<Map.Entry<Integer, String>>.
      */
-    public Iterator<Map.Entry<Integer, String>> iterator()
+    public Iterator<Map.Entry<Integer, ListItem>> iterator()
     {
         return items.entrySet().iterator();
     }
-    
+
+    /**
+     * Sets whether the item is checked or not.
+     * @param itemID The ID of the item to set.
+     * @param newIsChecked The checked value.
+     */
+    public void setItemChecked( Integer itemID, boolean newIsChecked )
+    {
+        items.get(itemID).setChecked( newIsChecked );
+    }
+
+    /**
+     * Returns whether a given item is checked.
+     * @param itemID The ID of the item to check.
+     * @return A boolean representation of whether the item is checked.
+     */
+    public boolean getItemChecked( Integer itemID )
+    {
+        return items.get( itemID ).getIsChecked();
+    }
+
+    /**
+     * Sets an item's description.
+     * @param itemID The ID of the item to set.
+     * @param newDescription A String representation of the new description.
+     */
+    public void setItemDescription( Integer itemID, String newDescription )
+    {
+        items.get(itemID).setDescription( newDescription );
+    }
+
+    /**
+     * Returns the description of the item.
+     * @param itemID The ID of the item in question.
+     * @return A String representation of the item.
+     */
+    public String getItemDescription( Integer itemID )
+    {
+        return items.get( itemID ).getDescription();
+    }
+
+    /**
+     * Returns an item.
+     * @param itemID THe ID of the item in question.
+     * @return The item as an ListItem object.
+     */
+    public ListItem getItem( Integer itemID )
+    {
+        return items.get( itemID );
+    }
+
     /**
      * Converts this object to a Json representation.
      * @return The json as a string.
